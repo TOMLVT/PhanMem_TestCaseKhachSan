@@ -228,24 +228,26 @@ namespace TestCaseKhachSan.UserForm
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
                     conn.Open();
-                                    string query = @"
-                    SELECT 
-                        pdp.MaLapPhieu,
-                        ctp.MaChiTietPhong,
-                        pdp.MaPhong,
-                        kh.HoTen,
-                        dv.TenDichVu,
-                        pdp.NgayNhanPhong,
-                        pdp.NgayTraPhong,
-                        pdp.SoNguoiO,
-                        pdp.TrangThaiPhieuDat,
-                        pdp.TienCoc,
-                        pdp.NgayDat
-                    FROM CHITIETPHONG ctp
-                    LEFT JOIN KHACH_HANG kh ON ctp.MaKhachHang = kh.MaKhachHang
-                    LEFT JOIN DICH_VU dv ON ctp.MaDichVu = dv.MaDichVu
-                    LEFT JOIN PHIEU_DAT_PHONG pdp ON ctp.MaPhong = pdp.MaPhong
-                    WHERE ctp.MaPhong = @MaPhong;";
+                    string query = @"
+   SELECT TOP 1 
+       pdp.MaLapPhieu,
+       ctp.MaChiTietPhong,
+       pdp.MaPhong,
+       kh.HoTen,
+       dv.TenDichVu,
+       pdp.NgayNhanPhong,
+       pdp.NgayTraPhong,
+       pdp.SoNguoiO,
+       pdp.TrangThaiPhieuDat,
+       pdp.TienCoc,
+       pdp.NgayDat
+   FROM CHITIETPHONG ctp
+   LEFT JOIN KHACH_HANG kh ON ctp.MaKhachHang = kh.MaKhachHang
+   LEFT JOIN DICH_VU dv ON ctp.MaDichVu = dv.MaDichVu
+   LEFT JOIN PHIEU_DAT_PHONG pdp ON ctp.MaPhong = pdp.MaPhong
+   WHERE ctp.MaPhong = @MaPhong
+   ORDER BY pdp.NgayDat DESC;";
+
 
                     SqlCommand cmd = new SqlCommand(query, conn);
                     cmd.Parameters.Add("@MaPhong", SqlDbType.Int).Value = maPhong;
@@ -556,12 +558,7 @@ namespace TestCaseKhachSan.UserForm
             string phuongThucThanhToan = cb_PhuongThucThanhToan.SelectedItem?.ToString();
             string trangThai = "Đã thanh toán";
 
-            if (string.IsNullOrEmpty(cb_PhuongThucThanhToan.Text))
-            {
-                MessageBox.Show("Vui lòng chọn phương thức cần thanh toán.");
-                return;
-            }
-
+           
             if (!decimal.TryParse(txtTienPhong.Text.Replace(" VNĐ", "").Replace(",", ""), out decimal tongTienPhong) ||
                 !decimal.TryParse(txtDichVu.Text.Replace(" VNĐ", "").Replace(",", ""), out decimal tongTienDichVu) ||
                 !decimal.TryParse(txtThanhToan.Text.Replace(" VNĐ", "").Replace(",", ""), out decimal tongTienThanhToan))
@@ -604,9 +601,6 @@ namespace TestCaseKhachSan.UserForm
                         INSERT INTO HOA_DON (NgayLapHoaDon, TongTienPhong, TongTienDichVu, TongTienThanhToan, PhuongThucThanhToan, TrangThai, MaLapPhieu)
                         VALUES (@NgayLapHoaDon, @TongTienPhong, @TongTienDichVu, @TongTienThanhToan, @PhuongThucThanhToan, @TrangThai, @MaLapPhieu)";
 
-                          
-
-
                             using (SqlCommand cmd = new SqlCommand(insertHoaDonQuery, conn, transaction))
                             {
                                 cmd.Parameters.AddWithValue("@NgayLapHoaDon", DateTime.Now);
@@ -619,14 +613,21 @@ namespace TestCaseKhachSan.UserForm
                                 cmd.ExecuteNonQuery();
                             }
 
-                            string deletePhieuDatPhongQuery = "DELETE FROM PHIEU_DAT_PHONG WHERE MaPhong = @MaPhong";
-                            using (SqlCommand deletePhieuCmd = new SqlCommand(deletePhieuDatPhongQuery, conn, transaction))
+                            string updatePhieuDatQuery = "UPDATE PHIEU_DAT_PHONG SET TrangThaiPhieuDat = N'Đã thanh toán' WHERE MaLapPhieu = @MaLapPhieu";
+                            using (SqlCommand updatePhieuCmd = new SqlCommand(updatePhieuDatQuery, conn, transaction))
                             {
-                                deletePhieuCmd.Parameters.AddWithValue("@MaPhong", selectedMaPhongDangChon);
-                                deletePhieuCmd.ExecuteNonQuery();
+                                updatePhieuCmd.Parameters.AddWithValue("@MaLapPhieu", maLapPhieu);
+                                updatePhieuCmd.ExecuteNonQuery();
                             }
 
 
+                            string deleteQuery = "DELETE FROM CHI_TIET_THIET_BI WHERE MaPhong = @MaPhong";
+                            using (SqlCommand deleteCmd = new SqlCommand(deleteQuery, conn, transaction))
+                            {
+                                deleteCmd.Parameters.AddWithValue("@MaPhong", selectedMaPhongDangChon);
+                                deleteCmd.ExecuteNonQuery();
+                            }
+                           
 
                             string deleteChiTietPhongQuery = "DELETE FROM CHITIETPHONG WHERE MaPhong = @MaPhong";
 
@@ -637,15 +638,6 @@ namespace TestCaseKhachSan.UserForm
                             }
 
 
-
-
-                            string deleteQuery = "DELETE FROM CHI_TIET_THIET_BI WHERE MaPhong = @MaPhong";
-                            using (SqlCommand deleteCmd = new SqlCommand(deleteQuery, conn, transaction))
-                            {
-                                deleteCmd.Parameters.AddWithValue("@MaPhong", selectedMaPhongDangChon);
-                                deleteCmd.ExecuteNonQuery();
-                            }
-
                             string updateQuery = "UPDATE PHONG SET TinhTrang = N'Trống' WHERE MaPhong = @MaPhong";
                             using (SqlCommand updateCmd = new SqlCommand(updateQuery, conn, transaction))
                             {
@@ -654,7 +646,7 @@ namespace TestCaseKhachSan.UserForm
                             }
 
                             transaction.Commit();
-                            MessageBox.Show("Thanh toán thành công ! ");
+                            MessageBox.Show("Thanh toán thành công! Phòng đã được cập nhật.");
                             LoadData();
                             data_Phong.DataSource = null;
                             txtDichVu.Text = "";
@@ -676,7 +668,6 @@ namespace TestCaseKhachSan.UserForm
                 MessageBox.Show("Lỗi kết nối cơ sở dữ liệu: " + ex.Message);
             }
         }
-
 
 
 
