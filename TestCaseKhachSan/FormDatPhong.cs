@@ -106,10 +106,21 @@ namespace TestCaseKhachSan
             DateTime ngayNhan = date_NhanPhong.Value;
             DateTime ngayTra = date_TraPhong.Value;
             int soNguoi = int.Parse(txtSonguoi.Text);
-            decimal tienCoc = decimal.Parse(txtTienCoc.Text);
+
+            // Chuyển kiểu lại do sử dụng String để định dạng VNĐ
+            string tienCoc = txtTienCoc.Text.Replace(".", "").Replace(" VND", "").Trim();
+
+
             DateTime ngayDat = DateTime.Now;
             string trangThaiPhieuDat = cb_TrangThaiPhieuDat.Text;
-            
+
+            if (!decimal.TryParse(tienCoc, out decimal nhapTienCoc) || nhapTienCoc < 0)
+            {
+                MessageBox.Show("Mức lương phải là số hợp lệ lớn hơn 0!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+
 
             using (SqlConnection conn = new SqlConnection(db.GetDatabase()))
             {
@@ -164,7 +175,7 @@ namespace TestCaseKhachSan
                     cmdPhieuDat.Parameters.AddWithValue("@NgayTra", ngayTra);
                     cmdPhieuDat.Parameters.AddWithValue("@SoNguoiO", soNguoi);
                     cmdPhieuDat.Parameters.AddWithValue("@TrangThai", trangThaiPhieuDat);
-                    cmdPhieuDat.Parameters.AddWithValue("@TienCoc", tienCoc);
+                    cmdPhieuDat.Parameters.AddWithValue("@TienCoc", nhapTienCoc);
                     cmdPhieuDat.Parameters.AddWithValue("@NgayDat", ngayDat);
                     cmdPhieuDat.Parameters.AddWithValue("@MaNhanVien", 7);
                     cmdPhieuDat.Parameters.AddWithValue("@MaDichVu", cb_DichVu.SelectedValue);
@@ -204,6 +215,17 @@ namespace TestCaseKhachSan
             }
         }
 
+        private void txtTienCoc_TextChanged(object sender, EventArgs e)
+        {
+            string input = txtTienCoc.Text.Replace(".", "").Replace(" VND", "").Trim();
+
+            if (decimal.TryParse(input, out decimal mucLuong))
+            {
+
+                txtTienCoc.Text = string.Format("{0:N0} VND", mucLuong);
+                txtTienCoc.SelectionStart = txtTienCoc.Text.Length;
+            }
+        }
 
         private void btn_Dong_Click(object sender, EventArgs e)
         {

@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Class1.cs" />
+    <Compile Include="DAL_DanhSachHoaDon.cs" />
     <Compile Include="Database\Database.cs" />
     <Compile Include="Model\Phong.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

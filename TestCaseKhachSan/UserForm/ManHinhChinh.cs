@@ -10,6 +10,37 @@ namespace TestCaseKhachSan.UserForm
 {
     public partial class ManHinhChinh : UserControl
     {
+        /**
+         * QUy trình Mô đun -------------------------------------------------
+         * 
+         * 
+         * - Load Danh sách các phòng 
+         * 
+         * - Code hành động CLick từng đối tượng phòng 
+         * 
+         * - Form Đặt phòng 
+         * 
+         * - Hiển thị chi tiết phòng + DGV + CellCLick
+         * 
+         * - Hiển thị chi tiết thiết bị của phòng + DGV + CellCLick
+         * 
+         * - Tính tổng tiền phòng khi đang xem
+         * 
+         * - NÚt áp dụng giảm giá 
+         * 
+         * - NÚt thanh toán phòng 
+         * 
+         * - Nút xóa thông tin phòng 
+         * 
+         * - NÚt xóa thông tin thiết bị 
+         * 
+         * - Nút thêm thiết bị 
+         * 
+         * - Định dạng VNĐ 
+         * 
+         * - NÚt mở danh sách hóa đơn 
+         * 
+         * **/
         private Database db = new Database();
         private Button lastClickedButton = null; // Lưu lại button được click gần nhất
 
@@ -68,7 +99,7 @@ namespace TestCaseKhachSan.UserForm
                             Label khuVucLabel = new Label
                             {
                                 Text = tenKhuVuc,
-                                Font = new Font("Arial", 14, FontStyle.Bold),
+                                Font = new Font("Arial", 12),
                                 AutoSize = true,
                                 ForeColor = Color.Black,
                                 Margin = new Padding(0, 0, 0, 10),
@@ -163,15 +194,15 @@ namespace TestCaseKhachSan.UserForm
         {
             string connectionString = db.GetDatabase();
             string query = @"
-    SELECT lp.Gia, pdp.NgayNhanPhong, pdp.NgayTraPhong, 
-           ISNULL(SUM(dv.GiaDichVu), 0) AS TongTienDichVu
-    FROM PHONG p
-    JOIN LOAI_PHONG lp ON p.MaLoaiPhong = lp.MaLoaiPhong
-    LEFT JOIN PHIEU_DAT_PHONG pdp ON p.MaPhong = pdp.MaPhong
-    LEFT JOIN CHITIETPHONG ctp ON pdp.MaPhong = ctp.MaPhong
-    LEFT JOIN DICH_VU dv ON ctp.MaDichVu = dv.MaDichVu
-    WHERE p.MaPhong = @MaPhong
-    GROUP BY lp.Gia, pdp.NgayNhanPhong, pdp.NgayTraPhong;";
+            SELECT lp.Gia, pdp.NgayNhanPhong, pdp.NgayTraPhong, 
+                   ISNULL(SUM(dv.GiaDichVu), 0) AS TongTienDichVu
+            FROM PHONG p
+            JOIN LOAI_PHONG lp ON p.MaLoaiPhong = lp.MaLoaiPhong
+            LEFT JOIN PHIEU_DAT_PHONG pdp ON p.MaPhong = pdp.MaPhong
+            LEFT JOIN CHITIETPHONG ctp ON pdp.MaPhong = ctp.MaPhong
+            LEFT JOIN DICH_VU dv ON ctp.MaDichVu = dv.MaDichVu
+            WHERE p.MaPhong = @MaPhong
+            GROUP BY lp.Gia, pdp.NgayNhanPhong, pdp.NgayTraPhong;";
 
 
             try
@@ -229,24 +260,24 @@ namespace TestCaseKhachSan.UserForm
                 {
                     conn.Open();
                     string query = @"
-   SELECT TOP 1 
-       pdp.MaLapPhieu,
-       ctp.MaChiTietPhong,
-       pdp.MaPhong,
-       kh.HoTen,
-       dv.TenDichVu,
-       pdp.NgayNhanPhong,
-       pdp.NgayTraPhong,
-       pdp.SoNguoiO,
-       pdp.TrangThaiPhieuDat,
-       pdp.TienCoc,
-       pdp.NgayDat
-   FROM CHITIETPHONG ctp
-   LEFT JOIN KHACH_HANG kh ON ctp.MaKhachHang = kh.MaKhachHang
-   LEFT JOIN DICH_VU dv ON ctp.MaDichVu = dv.MaDichVu
-   LEFT JOIN PHIEU_DAT_PHONG pdp ON ctp.MaPhong = pdp.MaPhong
-   WHERE ctp.MaPhong = @MaPhong
-   ORDER BY pdp.NgayDat DESC;";
+                   SELECT TOP 1 
+                       pdp.MaLapPhieu,
+                       ctp.MaChiTietPhong,
+                       pdp.MaPhong,
+                       kh.HoTen,
+                       dv.TenDichVu,
+                       pdp.NgayNhanPhong,
+                       pdp.NgayTraPhong,
+                       pdp.SoNguoiO,
+                       pdp.TrangThaiPhieuDat,
+                       pdp.TienCoc,
+                       pdp.NgayDat
+                   FROM CHITIETPHONG ctp
+                   LEFT JOIN KHACH_HANG kh ON ctp.MaKhachHang = kh.MaKhachHang
+                   LEFT JOIN DICH_VU dv ON ctp.MaDichVu = dv.MaDichVu
+                   LEFT JOIN PHIEU_DAT_PHONG pdp ON ctp.MaPhong = pdp.MaPhong
+                   WHERE ctp.MaPhong = @MaPhong
+                   ORDER BY pdp.NgayDat DESC;";
 
 
                     SqlCommand cmd = new SqlCommand(query, conn);
@@ -669,7 +700,23 @@ namespace TestCaseKhachSan.UserForm
             }
         }
 
+        private void data_Phong_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if (data_Phong.Columns[e.ColumnIndex].Name == "TienCoc" && e.Value != null)
+            {
+                if (decimal.TryParse(e.Value.ToString(), out decimal mucLuong))
+                {
 
+                    e.Value = string.Format("{0:N0} VND", mucLuong);
+                    e.FormattingApplied = true;
+                }
+            }
+        }
 
+        private void btn_hoaDon_Click(object sender, EventArgs e)
+        {
+            DanhSachHoaDon ds = new DanhSachHoaDon();
+            ds.ShowDialog();
+        }
     }
 }

@@ -16,5 +16,26 @@ namespace TestCaseKhachSan
         {
             InitializeComponent();
         }
+
+        private void mànHìnhChínhToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            manHinhChinh1.Visible = true;
+            hoaDon1.Visible = false;
+            manHinhPhu1.Visible = false;
+        }
+
+        private void hóaĐơnToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            manHinhChinh1.Visible = false;
+            hoaDon1.Visible = true;
+            manHinhPhu1.Visible = false;
+        }
+
+        private void mànHìnhPhụToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            manHinhChinh1.Visible = false;
+            hoaDon1.Visible = false;
+            manHinhPhu1.Visible = true;
+        }
     }
 }

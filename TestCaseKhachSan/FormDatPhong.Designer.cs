@@ -229,6 +229,7 @@
             this.txtTienCoc.Name = "txtTienCoc";
             this.txtTienCoc.Size = new System.Drawing.Size(245, 41);
             this.txtTienCoc.TabIndex = 33;
+            this.txtTienCoc.TextChanged += new System.EventHandler(this.txtTienCoc_TextChanged);
             // 
             // label14
             // 
