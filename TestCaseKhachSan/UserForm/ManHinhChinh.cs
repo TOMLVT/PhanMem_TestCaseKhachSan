@@ -76,6 +76,8 @@ namespace TestCaseKhachSan.UserForm
                     int currentKhuVucID = -1;
                     FlowLayoutPanel khuPanel = null;
 
+
+
                     while (reader.Read())
                     {
                         int khuVucID = reader.GetInt32(0);
@@ -717,6 +719,12 @@ namespace TestCaseKhachSan.UserForm
         {
             DanhSachHoaDon ds = new DanhSachHoaDon();
             ds.ShowDialog();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            ThongKeDoanhThu dt = new ThongKeDoanhThu();
+            dt.ShowDialog();
         }
     }
 }
